@@ -82,7 +82,9 @@ final class Game: Model, Content {
         self.isComplete = false
         self.$createdBy.id = createdBy
     }
-    
+}
+
+extension Game {
     final class Public: Content {
         var id: UUID?
         var boardRows: Int
