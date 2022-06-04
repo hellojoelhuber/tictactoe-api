@@ -82,7 +82,9 @@ final class Player: Model, Content {
         self.profilePicture = profilePicture
         self.userType = userType
     }
-    
+}
+
+extension Player {
     final class Public: Content {
         var id: UUID?
         var firstName: String
