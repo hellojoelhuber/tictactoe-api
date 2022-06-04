@@ -29,7 +29,7 @@ final class UserTests: XCTestCase {
                                    on: app.db)
         _ = try Player.create(on: app.db)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInUser: user, afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
             let users = try response.content.decode([Player.Public].self)
             
@@ -48,7 +48,7 @@ final class UserTests: XCTestCase {
                                    username: usersUsername,
                                    on: app.db)
         
-        try app.test(.GET, "\(usersURI)\(user.id!)", afterResponse: { response in
+        try app.test(.GET, "\(usersURI)\(user.id!)", loggedInUser: user, afterResponse: { response in
             let receivedUser = try response.content.decode(Player.Public.self)
             
             XCTAssertEqual(receivedUser.firstName, usersFirstName)
@@ -109,7 +109,7 @@ final class UserTests: XCTestCase {
             XCTAssertEqual(receivedUser.username, usersUsername)
             XCTAssertNotNil(receivedUser.id)
             
-            try app.test(.GET, usersURI, afterResponse: { secondResponse in
+            try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { secondResponse in
                 let users = try secondResponse.content.decode([Player.Public].self)
                 XCTAssertEqual(users.count, 2)
                 XCTAssertEqual(users[1].firstName, usersFirstName)
@@ -123,14 +123,14 @@ final class UserTests: XCTestCase {
     func test_User_CanBeSoftDeleted() throws {
         let user = try Player.create(on: app.db)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let users = try response.content.decode([Player.Public].self)
             XCTAssertEqual(users.count, 2)
         })
         
         try app.test(.DELETE, "\(usersURI)\(user.id!)", loggedInRequest: true)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let newUsers = try response.content.decode([Player.Public].self)
             XCTAssertEqual(newUsers.count, 1)
         })
@@ -139,21 +139,21 @@ final class UserTests: XCTestCase {
     func test_DeletedUser_CanBeRestored() throws {
         let user = try Player.create(on: app.db)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let users = try response.content.decode([Player.Public].self)
             XCTAssertEqual(users.count, 2)
         })
         
         try app.test(.DELETE, "\(usersURI)\(user.id!)", loggedInRequest: true)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let newUsers = try response.content.decode([Player.Public].self)
             XCTAssertEqual(newUsers.count, 1)
         })
         
         try app.test(.POST, "\(usersURI)\(user.id!)/restore", loggedInRequest: true)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let users = try response.content.decode([Player.Public].self)
             XCTAssertEqual(users.count, 2)
         })
@@ -163,21 +163,21 @@ final class UserTests: XCTestCase {
         //tokenAuthGroup.delete(":userID","force", use: forceDeleteHandler)
         let user = try Player.create(on: app.db)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let users = try response.content.decode([Player.Public].self)
             XCTAssertEqual(users.count, 2)
         })
         
         try app.test(.DELETE, "\(usersURI)\(user.id!)/force", loggedInRequest: true)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let newUsers = try response.content.decode([Player.Public].self)
             XCTAssertEqual(newUsers.count, 1)
         })
         
         try app.test(.POST, "\(usersURI)\(user.id!)/restore", loggedInRequest: true)
         
-        try app.test(.GET, usersURI, afterResponse: { response in
+        try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
             let users = try response.content.decode([Player.Public].self)
             XCTAssertEqual(users.count, 1)
         })

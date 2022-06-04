@@ -19,6 +19,8 @@ struct UsersController: RouteCollection {
         let tokenAuthGroup = usersRoute.grouped(tokenAuthMiddleware,
                                                 guardAuthMiddleware)
 
+        // I chose to set the getPlayer routes behind tokenAuth.
+        // If you want to allow users to be retrieved without logging in, change tokenAuthGroup to usersRoute
         tokenAuthGroup.get(use: getAllHandler)
         tokenAuthGroup.get(":userID", use: getHandler)
         tokenAuthGroup.get("self", use: getOwnDataHandler)

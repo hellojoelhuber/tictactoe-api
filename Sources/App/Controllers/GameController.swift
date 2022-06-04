@@ -42,11 +42,11 @@ struct GameController: RouteCollection {
     func getMyGamesHandler(_ req: Request) async throws -> [Game.Public] {
         let player = try req.auth.require(Player.self)
         
-        let searchSettings: GameSettings.Search
-        if let decodedSettings = try? req.content.decode(GameSettings.Search.self) {
+        let searchSettings: GameSearchOptions
+        if let decodedSettings = try? req.content.decode(GameSearchOptions.self) {
             searchSettings = decodedSettings
         } else {
-            searchSettings = GameSettings.Search(myGames: true)
+            searchSettings = GameSearchOptions(myGames: true)
         }
         
         let query = Game.query(on: req.db)
@@ -62,16 +62,16 @@ struct GameController: RouteCollection {
     func getJoinableGamesHandler(_ req: Request) async throws -> [Game.Public] {
         let player = try req.auth.require(Player.self)
         
-        let searchSettings: GameSettings.Search
-        if let decodedSettings = try? req.content.decode(GameSettings.Search.self) {
+        let searchSettings: GameSearchOptions
+        if let decodedSettings = try? req.content.decode(GameSearchOptions.self) {
             searchSettings = decodedSettings
         } else {
-            searchSettings = GameSettings.Search(active: true)
+            searchSettings = GameSearchOptions(active: true)
         }
         
         // This query filters by games which the player created.
         // This only works for 2p games, since the player either created the game or the game has 0 seats remaining. More than 2p will require filter by players already sitting at game.
-        #warning("TODO: Filter by players sitting at the game.")
+        #warning("TODO: For >2p support, Filter by players sitting at the game.")
 
         let query = Game.query(on: req.db).filter(\.$isComplete == false)
                                           .filter(\.$createdBy.$id != player.id!)

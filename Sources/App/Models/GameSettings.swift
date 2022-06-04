@@ -7,7 +7,7 @@
 
 import Vapor
 
-struct GameSettings: Content {
+final class GameSettings: Content {
     let rows: Int
     let columns: Int
     let password: String?
@@ -27,32 +27,32 @@ struct GameSettings: Content {
             self.password = password
         }
     }
+}
+
+final class GameSearchOptions: Content {
+    var myGames: Bool?
+    var active: Bool?
+    var minRows: Int?
+    var maxRows: Int?
+    var minColumns: Int?
+    var maxColumns: Int?
+    var isPasswordProtected: Bool?
+    var isMutualFollowsOnly: Bool?
+    var following: Bool?
     
-    final class Search: Content {
-        var myGames: Bool?
-        var active: Bool?
-        var minRows: Int?
-        var maxRows: Int?
-        var minColumns: Int?
-        var maxColumns: Int?
-        var isPasswordProtected: Bool?
-        var isMutualFollowsOnly: Bool?
-        var following: Bool?
-        
-        init(myGames: Bool? = nil, active: Bool? = nil,
-             minRows: Int? = 3,  maxRows: Int? = nil,
-             minColumns: Int? = 3, maxColumns: Int? = nil,
-             isPasswordProtected: Bool? = nil,
-             isMutualFollowsOnly: Bool? = nil, following: Bool? = nil) {
-            self.myGames = myGames
-            self.active = active
-            self.minRows = minRows
-            self.maxRows = maxRows
-            self.minColumns = minColumns
-            self.maxColumns = maxColumns
-            self.isPasswordProtected = isPasswordProtected
-            self.isMutualFollowsOnly = isMutualFollowsOnly
-            self.following = following
-        }
+    init(myGames: Bool? = nil, active: Bool? = nil,
+         minRows: Int? = 3,  maxRows: Int? = nil,
+         minColumns: Int? = 3, maxColumns: Int? = nil,
+         isPasswordProtected: Bool? = nil,
+         isMutualFollowsOnly: Bool? = nil, following: Bool? = nil) {
+        self.myGames = myGames
+        self.active = active
+        self.minRows = minRows
+        self.maxRows = maxRows
+        self.minColumns = minColumns
+        self.maxColumns = maxColumns
+        self.isPasswordProtected = isPasswordProtected
+        self.isMutualFollowsOnly = isMutualFollowsOnly
+        self.following = following
     }
 }

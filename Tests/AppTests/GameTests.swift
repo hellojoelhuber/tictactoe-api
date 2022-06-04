@@ -149,7 +149,7 @@ final class GameTests: XCTestCase {
         game.$isComplete.value = true
         _ = game.update(on: app.db)
         
-        let searchSettings = GameSettings.Search(myGames: true, active: true)
+        let searchSettings = GameSearchOptions(myGames: true, active: true)
         
         try app.test(.GET, "\(gameURI)my", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(searchSettings)
@@ -178,7 +178,7 @@ final class GameTests: XCTestCase {
         game.isComplete = true
         _ = game.update(on: app.db)
         
-        let searchSettings = GameSettings.Search(myGames: true, active: false)
+        let searchSettings = GameSearchOptions(myGames: true, active: false)
         
         try app.test(.GET, "\(gameURI)my", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(searchSettings)
@@ -488,7 +488,7 @@ final class GameTests: XCTestCase {
         let player = try Player.create(on: app.db)
         let game = GameSettings(rows: 4, columns: 4)
         
-        let searchSettings = GameSettings.Search(active: true,
+        let searchSettings = GameSearchOptions(active: true,
                                                  minRows: 4, maxRows: 4,
                                                  minColumns: 4, maxColumns: 4)
 
