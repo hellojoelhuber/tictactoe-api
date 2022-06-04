@@ -1,0 +1,32 @@
+//
+//  File.swift
+//
+//
+//  Created by Joel Huber on 5/29/22.
+//
+
+import Vapor
+import Fluent
+
+final class PlayerFollowing: Model, Content {
+    static let schema = PlayerFollowing.v20220531.schemaName
+    
+    @ID
+    var id: UUID?
+    
+    @Parent(key: v20220531.playerID)
+    var player: Player
+    
+    @Parent(key: v20220531.followingID)
+    var following: Player
+    
+    // createdAt on the relationship helps us order the list of followed players.
+    // Is there any sense in adding updatedAt and deletedAt, especially since there's a unique constraint on player/following?
+    @Timestamp(key: v20220601.createdAt, on: .create)
+    var createdAt: Date?
+    
+    #warning("TODO: It might be interesting to plan for an audit table.")
+    // I would approach it by removing the unique constraint and instead find the most recent record where the player-following exists. If null, create. If not null, but most recent createdAt also has deletedAt != nil, then create a new record.
+    
+    init() {}
+}
