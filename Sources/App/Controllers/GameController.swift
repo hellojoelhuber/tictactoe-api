@@ -92,8 +92,18 @@ struct GameController: RouteCollection {
     }
 
     func getGameActionsHandler(_ req: Request) async throws -> [GameAction.Public] {
+        let player = try req.auth.require(Player.self)
+        
         guard let game = try await Game.find(req.parameters.get("gameID"), on: req.db) else {
             throw Abort(.notFound)
+        }
+        if player.userType != .admin {
+            guard let _ = try await GamePlayer.query(on: req.db)
+                                              .filter(\.$game.$id == game.id!)
+                                              .filter(\.$player.$id == player.id!)
+                                              .first() else {
+                throw Abort(.forbidden)
+            }
         }
         
         // If turnParameter is provided, then return only actions since X; else, return all by setting turnFilter = 0
@@ -104,8 +114,7 @@ struct GameController: RouteCollection {
             turnFilter = 0
         }
         
-        let player = try req.auth.require(Player.self)
-        
+
         let gameActions = try await GameAction.query(on: req.db)
                                               .sort(\.$turnNumber)
                                               .sort(\.$actionNumber)
@@ -114,13 +123,7 @@ struct GameController: RouteCollection {
         
         guard gameActions.count > 0 else {
             throw Abort(.accepted)
-        }
-        
-        // Player must be admin or in the game, and since we already retrieved the gameActions, we can check that the player submitted an action to determine they're in the game. EXCEPT if they were second player and playing their first turn, so then we have to check if they were the nextTurn player.
-        // This only works for 2p game.
-        #warning("TODO: Figure out how to get the playerIDs so that I can more easily check that the player is in the game without yet another query. I don't really want to do a JOIN with GamePlayer, but may have to?")
-        guard (game.$nextTurn.id == player.id!) || (game.$createdBy.id == player.id!) || gameActions.compactMap({ $0.$player.id }).contains(player.id!) || (player.userType == .admin) else {
-            throw Abort(.forbidden)
+//            return [GameActions]().convertToPublic()
         }
         
         return gameActions.filter( { $0.turnNumber > turnFilter } ).convertToPublic()
