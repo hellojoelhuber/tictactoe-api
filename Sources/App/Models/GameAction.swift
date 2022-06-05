@@ -7,6 +7,7 @@
 
 import Fluent
 import Vapor
+import TicTacToeCore
 
 final class GameAction: Model, Content {
     static let schema = v20220527.schemaName
@@ -50,28 +51,16 @@ final class GameAction: Model, Content {
         self.actionNumber = actionNumber
         self.action = action
     }
-    
-    final class Public: Content {
-        let playerID: UUID
-        let turnNumber: Int
-        let action: Int
-        
-        init(playerID: UUID, turnNumber: Int, action: Int) {
-            self.playerID = playerID
-            self.turnNumber = turnNumber
-            self.action = action
-        }
-    }
 }
 
 extension GameAction {
-    func convertToPublic() -> GameAction.Public {
-        return GameAction.Public(playerID: _player.id, turnNumber: turnNumber, action: action)
+    func convertToPublic() -> GameActionDTO {
+        return GameActionDTO(playerID: _player.id, turnNumber: turnNumber, action: action)
     }
 }
 
 extension Collection where Element: GameAction {
-    func convertToPublic() -> [GameAction.Public] {
+    func convertToPublic() -> [GameActionDTO] {
         return self.map { $0.convertToPublic() }
     }
 }

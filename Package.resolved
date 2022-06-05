@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/fluent-kit.git",
       "state" : {
-        "revision" : "8958da5e2aec8d56ad45c340683117a074e2885a",
-        "version" : "1.25.0"
+        "revision" : "c3a018c21d1225c090f13dc0f2b3f5aa0a5f833f",
+        "version" : "1.26.0"
       }
     },
     {
@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/postgres-nio.git",
       "state" : {
-        "revision" : "a7a160bb861ca88b0c8f1cc11e15c4892ab897bf",
-        "version" : "1.10.0"
+        "revision" : "d648c5b4594ffbc2f6173318f70f5531e05ccb4e",
+        "version" : "1.11.0"
       }
     },
     {
@@ -187,6 +187,15 @@
       "state" : {
         "revision" : "1a4692acb88156e3da1b0c6732a8a38b2a744166",
         "version" : "1.12.0"
+      }
+    },
+    {
+      "identity" : "tictactoe-core",
+      "kind" : "localSourceControl",
+      "location" : "/Users/joelhuber/vapor/TicTacToe-Core",
+      "state" : {
+        "branch" : "main",
+        "revision" : "00ac4a2634b09a535288d57888244003d5a083c4"
       }
     },
     {

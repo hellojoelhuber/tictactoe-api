@@ -7,6 +7,7 @@
 
 @testable import App
 import XCTVapor
+import TicTacToeCore
 
 final class GameActionTests: XCTestCase {
     var app: Application!
@@ -28,18 +29,18 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 4)
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .created)
@@ -52,42 +53,42 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
             
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 1)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 5)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 2)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .notFound)
@@ -101,18 +102,18 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 4)
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .forbidden)
@@ -125,18 +126,18 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 9)
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .notAcceptable)
@@ -149,22 +150,22 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
+            let game = try response.content.decode(GameAPIModel.self)
             
             XCTAssertEqual(game.boardColumns, 4)
             XCTAssertEqual(game.boardRows, 4)
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
             
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 16)
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .notAcceptable)
@@ -177,24 +178,24 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 4)
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .created)
             })
             
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .conflict)
@@ -207,45 +208,48 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 1)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 5)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
+            let searchSettings = GameSearchOptions(myGames: true, active: false)
+            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, beforeRequest: { request in
+                try request.content.encode(searchSettings)
+            }, afterResponse: { response in
                 XCTAssertEqual(response.status, .ok)
-                let games = try response.content.decode([Game.Public].self)
+                let games = try response.content.decode([GameAPIModel].self)
                 
-                XCTAssertEqual(games[0].winner, firstPlayer)
+                XCTAssertEqual(games[0].winner!.id, firstPlayer)
             })
         })
     }
@@ -255,45 +259,48 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 1)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 7)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
+            let searchSettings = GameSearchOptions(myGames: true, active: false)
+            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, beforeRequest: { request in
+                try request.content.encode(searchSettings)
+            }, afterResponse: { response in
                 XCTAssertEqual(response.status, .ok)
-                let games = try response.content.decode([Game.Public].self)
+                let games = try response.content.decode([GameAPIModel].self)
                 
-                XCTAssertEqual(games[0].winner, firstPlayer)
+                XCTAssertEqual(games[0].winner!.id, firstPlayer)
             })
         })
     }
@@ -303,45 +310,48 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 1)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 2)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 8)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
+            let searchSettings = GameSearchOptions(myGames: true, active: false)
+            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, beforeRequest: { request in
+                try request.content.encode(searchSettings)
+            }, afterResponse: { response in
                 XCTAssertEqual(response.status, .ok)
-                let games = try response.content.decode([Game.Public].self)
+                let games = try response.content.decode([GameAPIModel].self)
                 
-                XCTAssertEqual(games[0].winner, firstPlayer)
+                XCTAssertEqual(games[0].winner!.id, firstPlayer)
             })
         })
     }
@@ -351,45 +361,48 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 2)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 1)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 6)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
+            let searchSettings = GameSearchOptions(myGames: true, active: false)
+            try app.test(.GET, "\(gameURI)my", loggedInUser: sally, beforeRequest: { request in
+                try request.content.encode(searchSettings)
+            }, afterResponse: { response in
                 XCTAssertEqual(response.status, .ok)
-                let games = try response.content.decode([Game.Public].self)
+                let games = try response.content.decode([GameAPIModel].self)
                 
-                XCTAssertEqual(games[0].winner, firstPlayer)
+                XCTAssertEqual(games[0].winner!.id, firstPlayer)
             })
         })
     }
@@ -415,38 +428,39 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
             
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)", loggedInUser: sally, afterResponse: { response in
-                let actions = try response.content.decode([GameAction.Public].self)
+            try app.test(.GET, "\(gameURI)\(game.id)", loggedInUser: sally, afterResponse: { response in
+                let actions = try response.content.decode([GameActionDTO].self)
                 XCTAssertEqual(actions.count, 1)
                 XCTAssertEqual(actions[0].action, 4)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)", loggedInUser: sally, afterResponse: { response in
-                let actions = try response.content.decode([GameAction.Public].self)
+            
+            try app.test(.GET, "\(gameURI)\(game.id)", loggedInUser: sally, afterResponse: { response in
+                let actions = try response.content.decode([GameActionDTO].self)
                 XCTAssertEqual(actions.count, 3)
                 XCTAssertEqual(actions[0].action, 4)
                 XCTAssertEqual(actions[1].action, 0)
@@ -461,38 +475,38 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)/0", loggedInUser: sally, afterResponse: { response in
-                let actions = try response.content.decode([GameAction.Public].self)
+            try app.test(.GET, "\(gameURI)\(game.id)/0", loggedInUser: sally, afterResponse: { response in
+                let actions = try response.content.decode([GameActionDTO].self)
                 XCTAssertEqual(actions.count, 1)
                 XCTAssertEqual(actions[0].action, 4)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)/2", loggedInUser: sally, afterResponse: { response in
-                let actions = try response.content.decode([GameAction.Public].self)
+            try app.test(.GET, "\(gameURI)\(game.id)/2", loggedInUser: sally, afterResponse: { response in
+                let actions = try response.content.decode([GameActionDTO].self)
                 XCTAssertEqual(actions.count, 1)
                 XCTAssertEqual(actions[0].action, 3)
             })
@@ -506,21 +520,21 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
             
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)", loggedInUser: bully, afterResponse: { response in
+            try app.test(.GET, "\(gameURI)\(game.id)", loggedInUser: bully, afterResponse: { response in
                 XCTAssertEqual(response.status, .forbidden)
             })
         })
@@ -533,31 +547,31 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)/2", loggedInUser: bully, afterResponse: { response in
+            try app.test(.GET, "\(gameURI)\(game.id)/2", loggedInUser: bully, afterResponse: { response in
                 XCTAssertEqual(response.status, .forbidden)
             })
         })
@@ -568,22 +582,22 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
         
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             let action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)", loggedInRequest: true, afterResponse: { response in
-                let actions = try response.content.decode([GameAction.Public].self)
+            try app.test(.GET, "\(gameURI)\(game.id)", loggedInRequest: true, afterResponse: { response in
+                let actions = try response.content.decode([GameActionDTO].self)
                 XCTAssertEqual(actions.count, 1)
             })
         })
@@ -594,32 +608,32 @@ final class GameActionTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { req in
             try req.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(Game.Public.self)
-            try app.test(.POST, "\(gameURI)\(game.id!)/join", loggedInUser: timmy)
+            let game = try response.content.decode(GameAPIModel.self)
+            try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy)
                 
             var firstPlayer: Player.IDValue!
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { response in
-                let games = try response.content.decode([Game.Public].self)
-                firstPlayer = games[0].nextTurn
+                let games = try response.content.decode([GameAPIModel].self)
+                firstPlayer = games[0].nextTurn!.id
             })
             
             var action = SubmitGameAction(action: 4)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 0)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? timmy : sally), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
             action = SubmitGameAction(action: 3)
-            try app.test(.POST, "\(gameURI)\(game.id!)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
+            try app.test(.POST, "\(gameURI)\(game.id)/action", loggedInUser: (firstPlayer == sally.id! ? sally : timmy), beforeRequest: { req in
                 try req.content.encode(action)
             })
             
-            try app.test(.GET, "\(gameURI)\(game.id!)/1", loggedInRequest: true, afterResponse: { response in
-                let actions = try response.content.decode([GameAction.Public].self)
+            try app.test(.GET, "\(gameURI)\(game.id)/1", loggedInRequest: true, afterResponse: { response in
+                let actions = try response.content.decode([GameActionDTO].self)
                 XCTAssertEqual(actions.count, 2)
                 XCTAssertEqual(actions[0].action, 0)
                 XCTAssertEqual(actions[1].action, 3)

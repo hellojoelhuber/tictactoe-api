@@ -8,6 +8,7 @@
 import Vapor
 import Crypto
 import Fluent
+import TicTacToeCore
 
 struct UsersController: RouteCollection {
     // MARK: - ROUTES
@@ -23,6 +24,7 @@ struct UsersController: RouteCollection {
         // If you want to allow users to be retrieved without logging in, change tokenAuthGroup to usersRoute
         tokenAuthGroup.get(use: getAllHandler)
         tokenAuthGroup.get(":userID", use: getHandler)
+        tokenAuthGroup.get(":userID","profile", use: getProfileHandler)
         tokenAuthGroup.get("self", use: getOwnDataHandler)
 
         
@@ -45,13 +47,13 @@ struct UsersController: RouteCollection {
     }
     
     // MARK: - GETS
-    func getAllHandler(_ req: Request) async throws -> [Player.Public] {
+    func getAllHandler(_ req: Request) async throws -> [PlayerAPIModel] {
         let users = try await Player.query(on: req.db).all()
             
         return users.convertToPublic()
     }
     
-    func getHandler(_ req: Request) async throws -> Player.Public {
+    func getHandler(_ req: Request) async throws -> PlayerAPIModel {
         guard let user = try await Player.find(req.parameters.get("userID"), on: req.db) else {
             throw Abort(.notFound)
         }
@@ -59,13 +61,30 @@ struct UsersController: RouteCollection {
         return user.convertToPublic()
     }
     
-    func getOwnDataHandler(_ req: Request) async throws -> Player.Public {
+    func getProfileHandler(_ req: Request) async throws -> PlayerProfileDTO {
+        guard let player = try await Player.find(req.parameters.get("userID"), on: req.db) else {
+            throw Abort(.notFound)
+        }
+        
+        let gamesPlayed = try await Game.query(on: req.db)
+                                        .join(GamePlayer.self, on: \Game.$id == \GamePlayer.$game.$id)
+                                        .filter(GamePlayer.self, \.$player.$id == player.id!)
+                                        .count()
+        
+        let gamesWon = try await Game.query(on: req.db)
+                                     .filter(\.$winner.$id == player.id!)
+                                     .count()
+
+        return PlayerProfileDTO(id: player.id!, username: player.username, gamesPlayed: gamesPlayed, gamesWon: gamesWon)
+    }
+    
+    func getOwnDataHandler(_ req: Request) async throws -> PlayerAPIModel {
         let player = try req.auth.require(Player.self)
         
         return try await Player.find(player.id, on: req.db)!.convertToPublic()
     }
     
-    func getFollowedPlayersHandler(_ req: Request) async throws -> [Player.Public] {
+    func getFollowedPlayersHandler(_ req: Request) async throws -> [PlayerAPIModel] {
         let player = try req.auth.require(Player.self)
         
         let followedPlayers = try await PlayerFollowing.query(on: req.db)
@@ -84,7 +103,7 @@ struct UsersController: RouteCollection {
     }
     
     // MARK: - POSTS
-    func createHandler(_ req: Request) async throws -> Player.Public {
+    func createHandler(_ req: Request) async throws -> PlayerAPIModel {
         try Player.validate(content: req)
         let user = try req.content.decode(Player.self)
         user.password = try Bcrypt.hash(user.password)
@@ -93,7 +112,7 @@ struct UsersController: RouteCollection {
     }
     
     //TODO: Need to add option to unfollow another player.
-    func followUserHandler(_ req: Request) async throws -> Player.Public {
+    func followUserHandler(_ req: Request) async throws -> PlayerAPIModel {
         let player = try req.auth.require(Player.self)
         
         guard let followed = try await Player.find(req.parameters.get("userID"), on: req.db) else {
@@ -109,7 +128,7 @@ struct UsersController: RouteCollection {
     
     // MARK: - PUTS
     #warning("TODO: Add PUT update profile options.")
-//    func updateHandler(_ req: Request) async throws -> Player.Public {
+//    func updateHandler(_ req: Request) async throws -> PlayerAPIModel {
 //        let updateData = try req.content.decode(User.self)
 //        updateData.password = try Bcrypt.hash(user.password)
 //        return updateData.save(on: req.db).map { updateData.convertToPublic() }

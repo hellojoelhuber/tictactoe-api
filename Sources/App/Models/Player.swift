@@ -7,6 +7,7 @@
 
 import Vapor
 import Fluent
+import TicTacToeCore
 
 #warning("TODO: Migrate as much code as possible to the TicTacToe package to share code between API, App.")
 
@@ -64,10 +65,6 @@ final class Player: Model, Content {
               to: \.$following)
     var following: [Player]
     
-    #warning("TODO: Add stats tracker per player.")
-    // Games Played
-    // Games Won
-    
     init() {}
     
     init(id: UUID? = nil, firstName: String, lastName: String,
@@ -85,29 +82,13 @@ final class Player: Model, Content {
 }
 
 extension Player {
-    final class Public: Content {
-        var id: UUID?
-        var firstName: String
-        var lastName: String
-        var username: String
-
-        init(id: UUID?, firstName: String, lastName: String, username: String) {
-            self.id = id
-            self.firstName = firstName
-            self.lastName = lastName
-            self.username = username
-        }
-    }
-}
-
-extension Player {
-    func convertToPublic() -> Player.Public {
-        return Player.Public(id: id, firstName: firstName, lastName: lastName, username: username)
+    func convertToPublic() -> PlayerAPIModel {
+        return PlayerAPIModel(id: id!, username: username)
     }
 }
 
 extension Collection where Element: Player {
-    func convertToPublic() -> [Player.Public] {
+    func convertToPublic() -> [PlayerAPIModel] {
         return self.map { $0.convertToPublic() }
     }
 }

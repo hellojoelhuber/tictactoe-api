@@ -7,6 +7,7 @@
 
 import Vapor
 import Fluent
+import TicTacToeCore
 
 struct GameController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
@@ -18,7 +19,7 @@ struct GameController: RouteCollection {
                                                guardAuthMiddleware)
         tokenAuthGroup.get("my", use: getMyGamesHandler)
         tokenAuthGroup.get("my",":active", use: getMyGamesHandler)
-        
+
         tokenAuthGroup.get(use: getJoinableGamesHandler)
         tokenAuthGroup.post("create", use: createGameHandler)
         tokenAuthGroup.post(":gameID","join", use: joinGameHandler)
@@ -31,44 +32,62 @@ struct GameController: RouteCollection {
     }
     
     // MARK: - GETs
-    func getAllGamesHandler(_ req: Request) async throws -> [Game.Public] {
+    func getAllGamesHandler(_ req: Request) async throws -> [GameAPIModel] {
         try await Game.query(on: req.db)
                       .filter(\.$isComplete == false)
+                      .with(\.$createdBy)
+                      .with(\.$players)
+                      .with(\.$nextTurn)
+                      .with(\.$winner)
                       .sort(\.$createdAt)
                       .all()
                       .convertToPublic()
+//
+//        let game =  try await Game.query(on: req.db)
+//                                  .filter(\.$id == newGame.id!)
+//                                  .with(\.$createdBy)
+//                                  .with(\.$players)
+//                                  .first()
+//
+//        return game!.convertToPublic()
     }
-    
-    func getMyGamesHandler(_ req: Request) async throws -> [Game.Public] {
+
+    func getMyGamesHandler(_ req: Request) async throws -> [GameAPIModel] {
         let player = try req.auth.require(Player.self)
-        
+
         let searchSettings: GameSearchOptions
         if let decodedSettings = try? req.content.decode(GameSearchOptions.self) {
             searchSettings = decodedSettings
         } else {
-            searchSettings = GameSearchOptions(myGames: true)
+            // active = true will keep the result set small.
+            searchSettings = GameSearchOptions(myGames: true, active: true)
         }
-        
+
         let query = Game.query(on: req.db)
         if searchSettings.active != nil { query.filter(\.$isComplete != searchSettings.active!) }
-        
+
+        // NOTE: This is not ideal, with 5 trips to the db. But a refactor will have to wait.
         return try await query.join(GamePlayer.self, on: \Game.$id == \GamePlayer.$game.$id)
                               .filter(GamePlayer.self, \.$player.$id == player.id!)
+                              .with(\.$createdBy)
+                              .with(\.$players)
+                              .with(\.$nextTurn)
+                              .with(\.$winner)
                               .sort(\.$createdAt)
                               .all()
                               .convertToPublic()
     }
-    
-    func getJoinableGamesHandler(_ req: Request) async throws -> [Game.Public] {
+
+    func getJoinableGamesHandler(_ req: Request) async throws -> [GameAPIModel] {
         let player = try req.auth.require(Player.self)
-        
+
         let searchSettings: GameSearchOptions
         if let decodedSettings = try? req.content.decode(GameSearchOptions.self) {
             searchSettings = decodedSettings
         } else {
             searchSettings = GameSearchOptions(active: true)
         }
-        
+
         // This query filters by games which the player created.
         // This only works for 2p games, since the player either created the game or the game has 0 seats remaining. More than 2p will require filter by players already sitting at game.
         #warning("TODO: For >2p support, Filter by players sitting at the game.")
@@ -85,13 +104,15 @@ struct GameController: RouteCollection {
 //        if searchSettings.isMutualFollowsOnly
         #warning("TODO: Add option to search for games created by players you follow.")
 //        if searchSettings.following
-        
-        return try await query.sort(\.$createdAt)
+
+        return try await query.with(\.$createdBy)
+                              .with(\.$players)
+                              .sort(\.$createdAt)
                               .all()
                               .convertToPublic()
     }
 
-    func getGameActionsHandler(_ req: Request) async throws -> [GameAction.Public] {
+    func getGameActionsHandler(_ req: Request) async throws -> [GameActionDTO] {
         let player = try req.auth.require(Player.self)
         
         guard let game = try await Game.find(req.parameters.get("gameID"), on: req.db) else {
@@ -131,7 +152,7 @@ struct GameController: RouteCollection {
 
     
     // MARK: - POSTs
-    func createGameHandler(_ req: Request) async throws -> Game.Public {
+    func createGameHandler(_ req: Request) async throws -> GameAPIModel {
         let player = try req.auth.require(Player.self)
         let gameSettings: GameSettings
         if let decodedSettings = try? req.content.decode(GameSettings.self) {
@@ -148,16 +169,22 @@ struct GameController: RouteCollection {
             throw Abort(.notImplemented)
         }
         
-        let game = Game(boardRows: gameSettings.rows,
+        let newGame = Game(boardRows: gameSettings.rows,
                         boardColumns: gameSettings.columns,
                         password: gameSettings.password,
                         isMutualFollowsOnly: gameSettings.isMutualFollowsOnly,
                         createdBy: player.id!)
         
-        try await game.save(on: req.db)
-        try await game.$players.attach(player, method: .ifNotExists, on: req.db)
+        try await newGame.save(on: req.db)
+        try await newGame.$players.attach(player, method: .ifNotExists, on: req.db)
         
-        return game.convertToPublic()
+        let game =  try await Game.query(on: req.db)
+                                  .filter(\.$id == newGame.id!)
+                                  .with(\.$createdBy)
+                                  .with(\.$players)
+                                  .first()
+        
+        return game!.convertToPublic()
     }
     
     func joinGameHandler(_ req: Request) async throws -> HTTPStatus {
@@ -321,6 +348,7 @@ struct GameController: RouteCollection {
         // Save changes to db.
         try await game.update(on: req.db)
         
+        // "Created" is acceptable return because the client will know if the submitting player won.
         return .created
     }
     
