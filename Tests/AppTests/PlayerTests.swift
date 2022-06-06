@@ -32,7 +32,7 @@ final class UserTests: XCTestCase {
         
         try app.test(.GET, usersURI, loggedInUser: user, afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
-            let users = try response.content.decode([PlayerAPIModel].self)
+            let users = try response.content.decode([PlayerDTO].self)
             
             XCTAssertEqual(users.count, 3)
             // Must get the second element in the array because of the admin user.
@@ -48,7 +48,7 @@ final class UserTests: XCTestCase {
                                    on: app.db)
         
         try app.test(.GET, "\(usersURI)\(user.id!)", loggedInUser: user, afterResponse: { response in
-            let receivedUser = try response.content.decode(PlayerAPIModel.self)
+            let receivedUser = try response.content.decode(PlayerDTO.self)
             
             XCTAssertEqual(receivedUser.username, usersUsername)
             XCTAssertEqual(receivedUser.id, user.id)
@@ -74,7 +74,7 @@ final class UserTests: XCTestCase {
         try app.test(.POST, "/api/game/create", loggedInUser: user, beforeRequest: { req in
             try req.content.encode(game)
         }, afterResponse: { response in
-            let receivedGame = try response.content.decode(GameAPIModel.self)
+            let receivedGame = try response.content.decode(GameDTO.self)
             try app.test(.POST, "/api/game/\(receivedGame.id)/join", loggedInRequest: true, afterResponse: { response in
                 XCTAssertEqual(response.status, .created)
             })
@@ -95,7 +95,7 @@ final class UserTests: XCTestCase {
             try app.test(.POST, "/api/game/create", loggedInUser: user, beforeRequest: { req in
                 try req.content.encode(game)
             }, afterResponse: { response in
-                let receivedSecondGame = try response.content.decode(GameAPIModel.self)
+                let receivedSecondGame = try response.content.decode(GameDTO.self)
                 try app.test(.POST, "/api/game/\(receivedSecondGame.id)/join", loggedInRequest: true, afterResponse: { response in
                     XCTAssertEqual(response.status, .created)
                 })
@@ -117,7 +117,7 @@ final class UserTests: XCTestCase {
         let timmy = try Player.create(firstName: "timmy", lastName: "wilds", username: "timmy", on: app.db)
         
         try app.test(.POST, "\(usersURI)\(sally.id!)/follow", loggedInUser: timmy, afterResponse: { response in
-            let receivedUser = try response.content.decode(PlayerAPIModel.self)
+            let receivedUser = try response.content.decode(PlayerDTO.self)
             
             XCTAssertEqual(receivedUser.username, sally.username)
             XCTAssertEqual(receivedUser.id, sally.id)
@@ -129,10 +129,10 @@ final class UserTests: XCTestCase {
         let timmy = try Player.create(firstName: "timmy", lastName: "wilds", username: "timmy", on: app.db)
         
         try app.test(.POST, "\(usersURI)\(sally.id!)/follow", loggedInUser: timmy, afterResponse: { response in
-            let receivedUser = try response.content.decode(PlayerAPIModel.self)
+            let receivedUser = try response.content.decode(PlayerDTO.self)
             
             try app.test(.GET, "\(usersURI)following", loggedInUser: timmy, afterResponse: { secondResponse in
-                let followedPlayers = try secondResponse.content.decode([PlayerAPIModel].self)
+                let followedPlayers = try secondResponse.content.decode([PlayerDTO].self)
                 XCTAssertEqual(followedPlayers.count, 1)
                 
                 XCTAssertEqual(followedPlayers[0].username, receivedUser.username)
@@ -152,13 +152,13 @@ final class UserTests: XCTestCase {
         try app.test(.POST, usersURI, loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(user)
         }, afterResponse: { response in
-            let receivedUser = try response.content.decode(PlayerAPIModel.self)
+            let receivedUser = try response.content.decode(PlayerDTO.self)
             
             XCTAssertEqual(receivedUser.username, usersUsername)
             XCTAssertNotNil(receivedUser.id)
             
             try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { secondResponse in
-                let users = try secondResponse.content.decode([PlayerAPIModel].self)
+                let users = try secondResponse.content.decode([PlayerDTO].self)
                 XCTAssertEqual(users.count, 2)
                 XCTAssertEqual(users[1].username, usersUsername)
                 XCTAssertEqual(users[1].id, receivedUser.id)
@@ -170,14 +170,14 @@ final class UserTests: XCTestCase {
         let user = try Player.create(on: app.db)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let users = try response.content.decode([PlayerAPIModel].self)
+            let users = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(users.count, 2)
         })
         
         try app.test(.DELETE, "\(usersURI)\(user.id!)", loggedInRequest: true)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let newUsers = try response.content.decode([PlayerAPIModel].self)
+            let newUsers = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(newUsers.count, 1)
         })
     }
@@ -186,21 +186,21 @@ final class UserTests: XCTestCase {
         let user = try Player.create(on: app.db)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let users = try response.content.decode([PlayerAPIModel].self)
+            let users = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(users.count, 2)
         })
         
         try app.test(.DELETE, "\(usersURI)\(user.id!)", loggedInRequest: true)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let newUsers = try response.content.decode([PlayerAPIModel].self)
+            let newUsers = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(newUsers.count, 1)
         })
         
         try app.test(.POST, "\(usersURI)\(user.id!)/restore", loggedInRequest: true)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let users = try response.content.decode([PlayerAPIModel].self)
+            let users = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(users.count, 2)
         })
     }
@@ -210,21 +210,21 @@ final class UserTests: XCTestCase {
         let user = try Player.create(on: app.db)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let users = try response.content.decode([PlayerAPIModel].self)
+            let users = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(users.count, 2)
         })
         
         try app.test(.DELETE, "\(usersURI)\(user.id!)/force", loggedInRequest: true)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let newUsers = try response.content.decode([PlayerAPIModel].self)
+            let newUsers = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(newUsers.count, 1)
         })
         
         try app.test(.POST, "\(usersURI)\(user.id!)/restore", loggedInRequest: true)
         
         try app.test(.GET, usersURI, loggedInRequest: true, afterResponse: { response in
-            let users = try response.content.decode([PlayerAPIModel].self)
+            let users = try response.content.decode([PlayerDTO].self)
             XCTAssertEqual(users.count, 1)
         })
     }

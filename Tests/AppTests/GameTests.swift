@@ -27,7 +27,7 @@ final class GameTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: player, beforeRequest: { req in
             try req.content.encode(game)
         }, afterResponse: { response in
-            let receivedGame = try response.content.decode(GameAPIModel.self)
+            let receivedGame = try response.content.decode(GameDTO.self)
             XCTAssertNotNil(receivedGame.id)
             XCTAssertEqual(receivedGame.isComplete, false)
             XCTAssertNil(receivedGame.nextTurn)
@@ -39,7 +39,7 @@ final class GameTests: XCTestCase {
             
             // Testing GET gameURI here works because the PLAYER created the game, and the Admin is basically looking for joinable games.
 //            try app.test(.GET, gameURI, loggedInRequest: true, afterResponse: { secondResponse in
-//                let games = try secondResponse.content.decode([GameAPIModel].self)
+//                let games = try secondResponse.content.decode([GameDTO].self)
 //                XCTAssertEqual(games.count, 1)
 //                XCTAssertEqual(games[0].isComplete, false)
 //                XCTAssertNil(games[0].nextTurn)
@@ -50,17 +50,17 @@ final class GameTests: XCTestCase {
     }
     
     func test_GameCustomSize_CanBeCreated() throws {
-        let game = GameSettings(rows: 4, columns: 4)
+        let game = GameDTO.Create(rows: 4, columns: 4)
         
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(game)
         }, afterResponse: { response in
-            let receivedGame = try response.content.decode(GameAPIModel.self)
+            let receivedGame = try response.content.decode(GameDTO.self)
             XCTAssertNotNil(receivedGame.id)
             
             // Testing GET gameURI/my here because the ADMIN created the game, so the Admin is a player, so the Admin cannot find the game by searching for joinable games.
             try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { secondResponse in
-                let games = try secondResponse.content.decode([GameAPIModel].self)
+                let games = try secondResponse.content.decode([GameDTO].self)
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].isComplete, false)
                 XCTAssertEqual(games[0].boardColumns, game.columns)
@@ -74,17 +74,17 @@ final class GameTests: XCTestCase {
     
     func test_GamePasswordProtected_CanBeCreated() throws {
         let testPassword = "tictactoe"
-        let game = GameSettings(password: testPassword)
+        let game = GameDTO.Create(password: testPassword)
 
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(game)
         }, afterResponse: { response in
-            let receivedGame = try response.content.decode(GameAPIModel.self)
+            let receivedGame = try response.content.decode(GameDTO.self)
             XCTAssertNotNil(receivedGame.id)
             
             // Testing GET gameURI/my here because the ADMIN created the game, so the Admin is a player, so the Admin cannot find the game by searching for joinable games.
             try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { secondResponse in
-                let games = try secondResponse.content.decode([GameAPIModel].self)
+                let games = try secondResponse.content.decode([GameDTO].self)
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].isComplete, false)
                 XCTAssertEqual(games[0].isPasswordProtected, true)
@@ -100,7 +100,7 @@ final class GameTests: XCTestCase {
     func test_JoinableGames_CanBeRetrieved() throws {
         let player = try Player.create(on: app.db)
         let game = try Game.create(createdBy: player.id!, on: app.db)
-        let gameCustom = GameSettings(rows: 4, columns: 4)
+        let gameCustom = GameDTO.Create(rows: 4, columns: 4)
         
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(gameCustom)
@@ -108,7 +108,7 @@ final class GameTests: XCTestCase {
         
         try app.test(.GET, gameURI, loggedInRequest: true, afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
-            let games = try response.content.decode([GameAPIModel].self)
+            let games = try response.content.decode([GameDTO].self)
             
             XCTAssertEqual(games.count, 1)
             XCTAssertEqual(games[0].isComplete, false)
@@ -124,7 +124,7 @@ final class GameTests: XCTestCase {
         let player = try Player.create(on: app.db)
         let game = try Game.create(createdBy: player.id!, on: app.db)
         
-        let customGame = GameSettings(rows: 4, columns: 4)
+        let customGame = GameDTO.Create(rows: 4, columns: 4)
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(customGame)
         })
@@ -135,7 +135,7 @@ final class GameTests: XCTestCase {
         
         try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
-            let games = try response.content.decode([GameAPIModel].self)
+            let games = try response.content.decode([GameDTO].self)
             
             XCTAssertEqual(games.count, 2)
         })
@@ -145,7 +145,7 @@ final class GameTests: XCTestCase {
         let player = try Player.create(on: app.db)
         let game = try Game.create(createdBy: player.id!, on: app.db)
         
-        let customGame = GameSettings(rows: 4, columns: 4)
+        let customGame = GameDTO.Create(rows: 4, columns: 4)
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(customGame)
         })
@@ -163,7 +163,7 @@ final class GameTests: XCTestCase {
             try req.content.encode(searchSettings)
         }, afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
-            let games = try response.content.decode([GameAPIModel].self)
+            let games = try response.content.decode([GameDTO].self)
             
             XCTAssertEqual(games.count, 1)
             XCTAssertEqual(games[0].isComplete, false)
@@ -174,7 +174,7 @@ final class GameTests: XCTestCase {
         let player = try Player.create(on: app.db)
         let game = try Game.create(createdBy: player.id!, on: app.db)
         
-        let customGame = GameSettings(rows: 4, columns: 4)
+        let customGame = GameDTO.Create(rows: 4, columns: 4)
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(customGame)
         })
@@ -192,7 +192,7 @@ final class GameTests: XCTestCase {
             try req.content.encode(searchSettings)
         }, afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
-            let games = try response.content.decode([GameAPIModel].self)
+            let games = try response.content.decode([GameDTO].self)
             
             XCTAssertEqual(games.count, 1)
             XCTAssertEqual(games[0].isComplete, true)
@@ -208,7 +208,7 @@ final class GameTests: XCTestCase {
         })
             
         try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { response in
-            let games = try response.content.decode([GameAPIModel].self)
+            let games = try response.content.decode([GameDTO].self)
             
             XCTAssertEqual(games.count, 1)
             XCTAssertEqual(games[0].id, game.id)
@@ -227,12 +227,12 @@ final class GameTests: XCTestCase {
         let sally = try Player.create(firstName: "sally", lastName: "fields", username: "sally", on: app.db)
         let timmy = try Player.create(firstName: "timmy", lastName: "wilds", username: "timmy", on: app.db)
         
-        let customGame = GameSettings(rows: 3, columns: 3)
+        let customGame = GameDTO.Create(rows: 3, columns: 3)
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             
             try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy, afterResponse: { response in
                 XCTAssertEqual(response.status, .created)
@@ -246,7 +246,7 @@ final class GameTests: XCTestCase {
             try app.test(.GET, "\(gameURI)my", loggedInUser: timmy, beforeRequest: { request in
                 try request.content.encode(searchSettings)
             }, afterResponse: { response in
-                let games = try response.content.decode([GameAPIModel].self)
+                let games = try response.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].id, game.id)
@@ -264,12 +264,12 @@ final class GameTests: XCTestCase {
     func test_Player_CanResign_UnstartedGame() throws {
         let sally = try Player.create(firstName: "sally", lastName: "fields", username: "sally", on: app.db)
         
-        let customGame = GameSettings(rows: 3, columns: 3)
+        let customGame = GameDTO.Create(rows: 3, columns: 3)
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             
             try app.test(.POST, "\(gameURI)\(game.id)/resign", loggedInUser: sally, afterResponse: { response in
                 XCTAssertEqual(response.status, .ok)
@@ -279,7 +279,7 @@ final class GameTests: XCTestCase {
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, beforeRequest: { request in
                 try request.content.encode(searchSettings)
             }, afterResponse: { response in
-                let games = try response.content.decode([GameAPIModel].self)
+                let games = try response.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].id, game.id)
@@ -295,21 +295,21 @@ final class GameTests: XCTestCase {
     func test_Player_CanJoin_PasswordProtectedGame() throws {
         let player = try Player.create(on: app.db)
         let testPassword = "tictactoe"
-        let customGame = GameSettings(password: testPassword)
+        let customGame = GameDTO.Create(password: testPassword)
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: player, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInRequest: true, beforeRequest: { reqJoin in
-                let joinGame = GameSettings.Join(password: testPassword)
+                let joinGame = GameDTO.Join(password: testPassword)
                 try reqJoin.content.encode(joinGame)
             }, afterResponse: { responseJoin in
                 XCTAssertEqual(responseJoin.status, .created)
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].id, game.id)
@@ -328,18 +328,18 @@ final class GameTests: XCTestCase {
     func test_PlayerWithoutGamePassword_CannotJoin_PasswordProtectedGame() throws {
         let player = try Player.create(on: app.db)
         let testPassword = "tictactoe"
-        let customGame = GameSettings(password: testPassword)
+        let customGame = GameDTO.Create(password: testPassword)
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: player, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInRequest: true, afterResponse: { responseJoin in
                 XCTAssertEqual(responseJoin.status, .forbidden)
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 0)
             })
@@ -349,21 +349,21 @@ final class GameTests: XCTestCase {
     func test_PlayerWithWrongGamePassword_CannotJoin_PasswordProtectedGame() throws {
         let player = try Player.create(on: app.db)
         let testPassword = "tictactoe"
-        let customGame = GameSettings(password: testPassword)
+        let customGame = GameDTO.Create(password: testPassword)
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: player, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInRequest: true, beforeRequest: { reqJoin in
-                let joinGame = GameSettings.Join(password: "wrongPassword")
+                let joinGame = GameDTO.Join(password: "wrongPassword")
                 try reqJoin.content.encode(joinGame)
             }, afterResponse: { responseJoin in
                 XCTAssertEqual(responseJoin.status, .forbidden)
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 0)
             })
@@ -376,19 +376,19 @@ final class GameTests: XCTestCase {
         try app.test(.POST, "/api/users/\(sally.id!)/follow", loggedInUser: timmy)
         try app.test(.POST, "/api/users/\(timmy.id!)/follow", loggedInUser: sally)
         
-        let customGame = GameSettings(isMutualFollowsOnly: true)
+        let customGame = GameDTO.Create(isMutualFollowsOnly: true)
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             XCTAssertEqual(game.isMutualFollowsOnly, true)
             try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: timmy, afterResponse: { responseJoin in
                 XCTAssertEqual(responseJoin.status, .created)
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInUser: timmy, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 1)
             })
@@ -406,13 +406,13 @@ final class GameTests: XCTestCase {
         let sally = try Player.create(firstName: "sally", lastName: "fields", username: "sally", on: app.db)
         let timmy = try Player.create(firstName: "timmy", lastName: "wilds", username: "timmy", on: app.db)
         
-        let customGame = GameSettings(isMutualFollowsOnly: true)
+        let customGame = GameDTO.Create(isMutualFollowsOnly: true)
         // fin Test Setup.
         
         try app.test(.POST, "\(gameURI)create", loggedInUser: sally, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             XCTAssertEqual(game.isMutualFollowsOnly, true)
             
             // 1. Neither player follows the other. Timmy tries to join Sally's game, is rejected.
@@ -421,7 +421,7 @@ final class GameTests: XCTestCase {
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInUser: timmy, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 0)
             })
@@ -433,7 +433,7 @@ final class GameTests: XCTestCase {
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInUser: timmy, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 0)
             })
@@ -444,14 +444,14 @@ final class GameTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: timmy, beforeRequest: { reqCreate in
             try reqCreate.content.encode(customGame)
         }, afterResponse: { response in
-            let game = try response.content.decode(GameAPIModel.self)
+            let game = try response.content.decode(GameDTO.self)
             XCTAssertEqual(game.isMutualFollowsOnly, true)
             try app.test(.POST, "\(gameURI)\(game.id)/join", loggedInUser: sally, afterResponse: { responseJoin in
                 XCTAssertEqual(responseJoin.status, .forbidden)
             })
                 
             try app.test(.GET, "\(gameURI)my", loggedInUser: sally, afterResponse: { responseGet in
-                let games = try responseGet.content.decode([GameAPIModel].self)
+                let games = try responseGet.content.decode([GameDTO].self)
                 
                 XCTAssertEqual(games.count, 1)
             })
@@ -472,19 +472,19 @@ final class GameTests: XCTestCase {
     
     func test_Player_CanCreate_GameWithSettings_CustomSize_Password_MutualsOnly() throws {
         let testPassword = "oopsiedaisy"
-        let game = GameSettings(rows: 4, columns: 4,
+        let game = GameDTO.Create(rows: 4, columns: 4,
                                       password: testPassword,
                                       isMutualFollowsOnly: true)
 
         try app.test(.POST, "\(gameURI)create", loggedInRequest: true, beforeRequest: { req in
             try req.content.encode(game)
         }, afterResponse: { response in
-            let receivedGame = try response.content.decode(GameAPIModel.self)
+            let receivedGame = try response.content.decode(GameDTO.self)
             XCTAssertNotNil(receivedGame.id)
             
             // Testing GET gameURI/my here because the ADMIN created the game, so the Admin is a player, so the Admin cannot find the game by searching for joinable games.
             try app.test(.GET, "\(gameURI)my", loggedInRequest: true, afterResponse: { secondResponse in
-                let games = try secondResponse.content.decode([GameAPIModel].self)
+                let games = try secondResponse.content.decode([GameDTO].self)
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].isComplete, false)
                 XCTAssertEqual(games[0].boardColumns, game.columns)
@@ -500,7 +500,7 @@ final class GameTests: XCTestCase {
     
     func test_Player_CanSearch_CustomSizeGames() throws {
         let player = try Player.create(on: app.db)
-        let game = GameSettings(rows: 4, columns: 4)
+        let game = GameDTO.Create(rows: 4, columns: 4)
         
         let searchSettings = GameSearchOptions(active: true,
                                                  minRows: 4, maxRows: 4,
@@ -509,13 +509,13 @@ final class GameTests: XCTestCase {
         try app.test(.POST, "\(gameURI)create", loggedInUser: player, beforeRequest: { req in
             try req.content.encode(game)
         }, afterResponse: { response in
-            let receivedGame = try response.content.decode(GameAPIModel.self)
+            let receivedGame = try response.content.decode(GameDTO.self)
             XCTAssertNotNil(receivedGame.id)
             
             try app.test(.GET, "\(gameURI)", loggedInRequest: true, beforeRequest: { req in
                 try req.content.encode(searchSettings)
             }, afterResponse: { secondResponse in
-                let games = try secondResponse.content.decode([GameAPIModel].self)
+                let games = try secondResponse.content.decode([GameDTO].self)
                 XCTAssertEqual(games.count, 1)
                 XCTAssertEqual(games[0].isComplete, false)
                 XCTAssertEqual(games[0].boardColumns, game.columns)

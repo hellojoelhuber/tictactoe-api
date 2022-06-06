@@ -56,6 +56,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(Game.AddPasswordAndFollowSettings())
     app.migrations.add(PlayerFollowing.Create())
     app.migrations.add(PlayerFollowing.AddCreatedAt())
+    app.migrations.add(Player.AddPlayerIcon())
     
     #warning("TODO: Refactor the migrations into a smaller set for the templatization of this project.")
     

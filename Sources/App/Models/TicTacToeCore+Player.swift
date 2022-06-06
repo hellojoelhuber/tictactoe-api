@@ -8,11 +8,12 @@
 import Vapor
 import TicTacToeCore
 
-extension PlayerAPIModel: Content {}
+extension PlayerDTO: Content {}
 
-extension PlayerAPIModel {
+extension PlayerDTO {
     init(_ player: Player) throws {
         try self.init(id: player.requireID(),
-                      username: player.username)
+                      username: player.username,
+                      profileIcon: player.profileIcon)
     }
 }

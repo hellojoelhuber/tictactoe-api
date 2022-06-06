@@ -36,9 +36,11 @@ final class Player: Model, Content {
 //    @OptionalField(key: "siwaIdentifier")
 //    var siwaIdentifier: String?
     
-    @OptionalField(key: v20220101.profilePicture)
-    var profilePicture: String?
-    #warning("TODO: Provide option to upload Profile Pictures.")
+//    @OptionalField(key: v20220101.profilePicture)
+//    var profilePicture: String?
+//    #warning("TODO: Provide option to upload Profile Pictures.")
+    @Field(key: v20220602.profileIcon)
+    var profileIcon: String
     
 //    @Timestamp(key: "last_login")
 //    var lastLogin: Date?
@@ -69,26 +71,26 @@ final class Player: Model, Content {
     
     init(id: UUID? = nil, firstName: String, lastName: String,
          username: String, password: String, email: String,
-         profilePicture: String? = nil, userType: UserType = .standard
+         profileIcon: String = "hare", userType: UserType = .standard
     ) {
         self.firstName = firstName
         self.lastName = lastName
         self.username = username
         self.password = password
         self.email = email
-        self.profilePicture = profilePicture
+        self.profileIcon = profileIcon
         self.userType = userType
     }
 }
 
 extension Player {
-    func convertToPublic() -> PlayerAPIModel {
-        return PlayerAPIModel(id: id!, username: username)
+    func convertToPublic() -> PlayerDTO {
+        return PlayerDTO(id: id!, username: username, profileIcon: profileIcon)
     }
 }
 
 extension Collection where Element: Player {
-    func convertToPublic() -> [PlayerAPIModel] {
+    func convertToPublic() -> [PlayerDTO] {
         return self.map { $0.convertToPublic() }
     }
 }

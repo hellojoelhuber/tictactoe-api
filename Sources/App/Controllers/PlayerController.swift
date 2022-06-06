@@ -47,13 +47,13 @@ struct UsersController: RouteCollection {
     }
     
     // MARK: - GETS
-    func getAllHandler(_ req: Request) async throws -> [PlayerAPIModel] {
+    func getAllHandler(_ req: Request) async throws -> [PlayerDTO] {
         let users = try await Player.query(on: req.db).all()
             
         return users.convertToPublic()
     }
     
-    func getHandler(_ req: Request) async throws -> PlayerAPIModel {
+    func getHandler(_ req: Request) async throws -> PlayerDTO {
         guard let user = try await Player.find(req.parameters.get("userID"), on: req.db) else {
             throw Abort(.notFound)
         }
@@ -75,16 +75,26 @@ struct UsersController: RouteCollection {
                                      .filter(\.$winner.$id == player.id!)
                                      .count()
 
-        return PlayerProfileDTO(id: player.id!, username: player.username, gamesPlayed: gamesPlayed, gamesWon: gamesWon)
+        return PlayerProfileDTO(id: player.id!, username: player.username, profileIcon: player.profileIcon, gamesPlayed: gamesPlayed, gamesWon: gamesWon)
     }
     
-    func getOwnDataHandler(_ req: Request) async throws -> PlayerAPIModel {
+    func getOwnDataHandler(_ req: Request) async throws -> PlayerProfileDTO {
         let player = try req.auth.require(Player.self)
         
-        return try await Player.find(player.id, on: req.db)!.convertToPublic()
+        let gamesPlayed = try await Game.query(on: req.db)
+                                        .join(GamePlayer.self, on: \Game.$id == \GamePlayer.$game.$id)
+                                        .filter(GamePlayer.self, \.$player.$id == player.id!)
+                                        .count()
+        
+        let gamesWon = try await Game.query(on: req.db)
+                                     .filter(\.$winner.$id == player.id!)
+                                     .count()
+        
+//        return try await Player.find(player.id, on: req.db)!.convertToPublic()
+        return try await PlayerProfileDTO(player, gamesPlayed: gamesPlayed, gamesWon: gamesWon)
     }
     
-    func getFollowedPlayersHandler(_ req: Request) async throws -> [PlayerAPIModel] {
+    func getFollowedPlayersHandler(_ req: Request) async throws -> [PlayerDTO] {
         let player = try req.auth.require(Player.self)
         
         let followedPlayers = try await PlayerFollowing.query(on: req.db)
@@ -103,7 +113,7 @@ struct UsersController: RouteCollection {
     }
     
     // MARK: - POSTS
-    func createHandler(_ req: Request) async throws -> PlayerAPIModel {
+    func createHandler(_ req: Request) async throws -> PlayerDTO {
         try Player.validate(content: req)
         let user = try req.content.decode(Player.self)
         user.password = try Bcrypt.hash(user.password)
@@ -112,7 +122,7 @@ struct UsersController: RouteCollection {
     }
     
     //TODO: Need to add option to unfollow another player.
-    func followUserHandler(_ req: Request) async throws -> PlayerAPIModel {
+    func followUserHandler(_ req: Request) async throws -> PlayerDTO {
         let player = try req.auth.require(Player.self)
         
         guard let followed = try await Player.find(req.parameters.get("userID"), on: req.db) else {
@@ -128,7 +138,7 @@ struct UsersController: RouteCollection {
     
     // MARK: - PUTS
     #warning("TODO: Add PUT update profile options.")
-//    func updateHandler(_ req: Request) async throws -> PlayerAPIModel {
+//    func updateHandler(_ req: Request) async throws -> PlayerDTO {
 //        let updateData = try req.content.decode(User.self)
 //        updateData.password = try Bcrypt.hash(user.password)
 //        return updateData.save(on: req.db).map { updateData.convertToPublic() }

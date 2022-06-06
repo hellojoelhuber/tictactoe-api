@@ -8,9 +8,9 @@
 import Vapor
 import TicTacToeCore
 
-extension GameAPIModel: Content {}
+extension GameDTO: Content {}
 
-extension GameAPIModel {
+extension GameDTO {
     init(_ game: Game, nextTurn: Player?, winner: Player?, createdBy: Player, players: [Player]) throws {
         try self.init(id: game.requireID(),
                       boardRows: game.boardRows,
@@ -29,3 +29,7 @@ extension GameAPIModel {
                       players: players.convertToPublic())
     }
 }
+
+extension GameDTO.Create: Content {}
+
+extension GameDTO.Join: Content {}

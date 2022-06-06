@@ -14,6 +14,7 @@ extension PlayerProfileDTO {
     init(_ player: Player, gamesPlayed: Int, gamesWon: Int) throws {
         try self.init(id: player.requireID(),
                       username: player.username,
+                      profileIcon: player.profileIcon,
                       gamesPlayed: gamesPlayed,
                       gamesWon: gamesWon)
     }

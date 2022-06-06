@@ -84,70 +84,47 @@ final class Game: Model, Content {
         self.$createdBy.id = createdBy
     }
 }
-//
-//extension Game {
-//    final class Public: Content {
-//        var id: UUID?
-//        var boardRows: Int
-//        var boardColumns: Int
-//        var isPasswordProtected: Bool
-//        var isMutualFollowsOnly: Bool
-//        var playerCount: Int
-//        var openSeats: Int
-//        var completeTurnsCount: Int
-//        var nextTurn: Player.IDValue?
-//        var isComplete: Bool
-//        var winner: Player.IDValue?
-//        var createdBy: Player.IDValue
-//        var createdAt: Date
-//
-//        init(id: UUID?,
-//             boardRows: Int, boardColumns: Int,
-//             isPasswordProtected: Bool, isMutualFollowsOnly: Bool,
-//             playerCount: Int, openSeats: Int,
-//             completeTurnsCount: Int, nextTurn: Player.IDValue? = nil,
-//             isComplete: Bool, winner: Player.IDValue? = nil,
-//             createdBy: Player.IDValue, createdAt: Date) {
-//            self.id = id
-//            self.playerCount = playerCount
-//            self.boardRows = boardRows
-//            self.boardColumns = boardColumns
-//            self.isPasswordProtected = isPasswordProtected
-//            self.isMutualFollowsOnly = isMutualFollowsOnly
-//            self.openSeats = openSeats
-//            self.completeTurnsCount = completeTurnsCount
-//            self.nextTurn = nextTurn
-//            self.isComplete = isComplete
-//            self.winner = winner
-//            self.createdAt = createdAt
-//            self.createdBy = createdBy
-//        }
-//    }
-//}
-
 
 extension Game {
-    func convertToPublic() -> GameAPIModel {
-        return GameAPIModel(id: id!,
-                            boardRows: boardRows,
-                            boardColumns: boardColumns,
-                            isPasswordProtected: password != nil,
-                            isMutualFollowsOnly: isMutualFollowsOnly,
-                            playerCount: playerCount,
-                            openSeats: openSeats,
-                            completeTurnsCount: completeTurnsCount,
-                            nextTurn: nextTurn?.convertToPublic(),
-                            isComplete: isComplete,
-                            winner: winner?.convertToPublic(),
-                            createdBy: createdBy.convertToPublic(),
-                            createdAt: createdAt!,
-                            updatedAt: updatedAt!,
-                            players: players.convertToPublic())
+    func convertToPublic() -> GameDTO {
+        return GameDTO(id: id!,
+                       boardRows: boardRows,
+                       boardColumns: boardColumns,
+                       isPasswordProtected: password != nil,
+                       isMutualFollowsOnly: isMutualFollowsOnly,
+                       playerCount: playerCount,
+                       openSeats: openSeats,
+                       completeTurnsCount: completeTurnsCount,
+                       nextTurn: nextTurn?.convertToPublic(),
+                       isComplete: isComplete,
+                       winner: winner?.convertToPublic(),
+                       createdBy: createdBy.convertToPublic(),
+                       createdAt: createdAt!,
+                       updatedAt: updatedAt!,
+                       players: players.convertToPublic())
     }
 }
 
 extension Collection where Element: Game {
-    func convertToPublic() -> [GameAPIModel] {
+    func convertToPublic() -> [GameDTO] {
         return self.map { $0.convertToPublic() }
+    }
+}
+
+
+extension Game {
+    func convertToActiveDTO(playersEagerLoaded: Bool) -> GameActiveDTO {
+        return GameActiveDTO(id: id!,
+                             boardRows: boardRows,
+                             boardColumns: boardColumns,
+                             nextTurn: nextTurn?.convertToPublic(),
+                             players: playersEagerLoaded ? players.convertToPublic() : []
+        )
+    }
+}
+
+extension Collection where Element: Game {
+    func convertToActiveDTO(playersEagerLoaded: Bool) -> [GameActiveDTO] {
+        return self.map { $0.convertToActiveDTO(playersEagerLoaded: playersEagerLoaded) }
     }
 }

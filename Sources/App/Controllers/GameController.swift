@@ -32,7 +32,7 @@ struct GameController: RouteCollection {
     }
     
     // MARK: - GETs
-    func getAllGamesHandler(_ req: Request) async throws -> [GameAPIModel] {
+    func getAllGamesHandler(_ req: Request) async throws -> [GameDTO] {
         try await Game.query(on: req.db)
                       .filter(\.$isComplete == false)
                       .with(\.$createdBy)
@@ -52,7 +52,7 @@ struct GameController: RouteCollection {
 //        return game!.convertToPublic()
     }
 
-    func getMyGamesHandler(_ req: Request) async throws -> [GameAPIModel] {
+    func getMyGamesHandler(_ req: Request) async throws -> [GameDTO] {
         let player = try req.auth.require(Player.self)
 
         let searchSettings: GameSearchOptions
@@ -78,7 +78,7 @@ struct GameController: RouteCollection {
                               .convertToPublic()
     }
 
-    func getJoinableGamesHandler(_ req: Request) async throws -> [GameAPIModel] {
+    func getJoinableGamesHandler(_ req: Request) async throws -> [GameDTO] {
         let player = try req.auth.require(Player.self)
 
         let searchSettings: GameSearchOptions
@@ -152,13 +152,13 @@ struct GameController: RouteCollection {
 
     
     // MARK: - POSTs
-    func createGameHandler(_ req: Request) async throws -> GameAPIModel {
+    func createGameHandler(_ req: Request) async throws -> GameDTO {
         let player = try req.auth.require(Player.self)
-        let gameSettings: GameSettings
-        if let decodedSettings = try? req.content.decode(GameSettings.self) {
+        let gameSettings: GameDTO.Create
+        if let decodedSettings = try? req.content.decode(GameDTO.Create.self) {
             gameSettings = decodedSettings
         } else {
-            gameSettings = GameSettings(rows: 3, columns: 3)
+            gameSettings = GameDTO.Create(rows: 3, columns: 3)
         }
         
         #warning("TODO: Support asymmetical board sizes, e.g. 3x4")
@@ -200,7 +200,7 @@ struct GameController: RouteCollection {
         
         // VALIDATION: If password-protected, was the password provided?
         if game.password != nil {
-            guard let joinPassword = try? req.content.decode(GameSettings.Join.self) else {
+            guard let joinPassword = try? req.content.decode(GameDTO.Join.self) else {
                 throw Abort(.forbidden)
             }
             guard joinPassword.password == game.password else {
@@ -317,9 +317,11 @@ struct GameController: RouteCollection {
                                                 move.action
                                             }
                                             .sorted()
+        // Can I convert actionsOnly to DTO, then have the checkWin function on the actionsDTO, pass in row,col to the func?
         let row = Int(action.action/game.boardColumns)
         let col = action.action % game.boardColumns
-        if game.checkWin(row: row, col: col, actions: actionsOnly) {
+//        if game.checkWin(row: row, col: col, actions: actionsOnly) {
+        if game.convertToActiveDTO(playersEagerLoaded: false).checkWin(row: row, col: col, actions: actionsOnly) {
             game.$winner.id = player.id!
             game.isComplete = true
         }
