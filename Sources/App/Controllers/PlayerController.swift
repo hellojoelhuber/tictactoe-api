@@ -114,8 +114,8 @@ struct UsersController: RouteCollection {
     
     // MARK: - POSTS
     func createHandler(_ req: Request) async throws -> PlayerDTO {
-        try Player.validate(content: req)
-        let user = try req.content.decode(Player.self)
+        try PlayerCreateDTO.validate(content: req)
+        let user = try req.content.decode(PlayerCreateDTO.self).convertToPlayer()
         user.password = try Bcrypt.hash(user.password)
         try await user.save(on: req.db)
         return user.convertToPublic()
@@ -199,9 +199,9 @@ struct UsersController: RouteCollection {
 }
 
 
-extension Player: Validatable {
-    // TASK: Is there a way to ensure the FieldKey and ValidationKey strings stay in sync?
-    static func validations(_ validations: inout Validations) {
+extension PlayerCreateDTO: Validatable {
+    #warning("TODO: Is there a way to ensure the FieldKey and ValidationKey strings stay in sync?") 
+    public static func validations(_ validations: inout Validations) {
         validations.add("firstName", as: String.self, is: !.empty)
         validations.add("lastName", as: String.self, is: !.empty)
         

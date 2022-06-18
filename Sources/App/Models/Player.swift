@@ -9,9 +9,7 @@ import Vapor
 import Fluent
 import TicTacToeCore
 
-#warning("TODO: Migrate as much code as possible to the TicTacToe package to share code between API, App.")
-
-final class Player: Model, Content {
+final class Player: Model {
     static let schema = v20220101.schemaName
     
     @ID

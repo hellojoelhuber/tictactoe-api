@@ -142,11 +142,11 @@ final class UserTests: XCTestCase {
     }
     
     func test_User_CanBeCreated() throws {
-        let user = Player(firstName: usersFirstName,
-                        lastName: usersLastName,
-                        username: usersUsername,
-                        password: "password",
-                        email: "\(usersUsername)@test.com")
+        let user = PlayerCreateDTO(firstName: usersFirstName,
+                                   lastName: usersLastName,
+                                   username: usersUsername,
+                                   password: "password",
+                                   email: "\(usersUsername)@test.com")
 
         
         try app.test(.POST, usersURI, loggedInRequest: true, beforeRequest: { req in

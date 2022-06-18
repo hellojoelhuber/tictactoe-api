@@ -113,18 +113,18 @@ extension Collection where Element: Game {
 
 
 extension Game {
-    func convertToActiveDTO(playersEagerLoaded: Bool) -> GameActiveDTO {
-        return GameActiveDTO(id: id!,
-                             boardRows: boardRows,
-                             boardColumns: boardColumns,
-                             nextTurn: nextTurn?.convertToPublic(),
-                             players: playersEagerLoaded ? players.convertToPublic() : []
+    func convertToActiveDTO(playersEagerLoaded: Bool) -> GameDTO.Listing {
+        return GameDTO.Listing(id: id!,
+                               boardRows: boardRows,
+                               boardColumns: boardColumns,
+                               nextTurn: nextTurn?.convertToPublic(),
+                               players: playersEagerLoaded ? players.convertToPublic() : []
         )
     }
 }
 
 extension Collection where Element: Game {
-    func convertToActiveDTO(playersEagerLoaded: Bool) -> [GameActiveDTO] {
+    func convertToActiveDTO(playersEagerLoaded: Bool) -> [GameDTO.Listing] {
         return self.map { $0.convertToActiveDTO(playersEagerLoaded: playersEagerLoaded) }
     }
 }
