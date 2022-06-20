@@ -277,12 +277,9 @@ struct GameController: RouteCollection {
                                                 .compactMap { move in
                                                     move.action
                                                 }
-        for index in 0..<playedSquares.count {
-            if action.action == playedSquares[index] {
-                throw Abort(.conflict)
-            }
+        guard !playedSquares.contains(action.action) else {
+            throw Abort(.conflict)
         }
-        
         
         // You're cool; action happened.
         let gameAction = GameAction(gameID: game.id!,
