@@ -92,7 +92,8 @@ struct GameController: RouteCollection {
         let query = Game.query(on: req.db).filter(\.$isComplete == false)
                                           .filter(\.$createdBy.$id != player.id!)
                                           .filter(\.$openSeats > 0)
-        if searchSettings.isPasswordProtected != nil { query.filter(\.$password != nil) }
+        if searchSettings.isPasswordProtected != nil, searchSettings.isPasswordProtected == true { query.filter(\.$password != nil) }
+        if searchSettings.isPasswordProtected != nil, searchSettings.isPasswordProtected == false { query.filter(\.$password == nil) }
         if searchSettings.minColumns != nil, searchSettings.minColumns! > 3 { query.filter(\.$boardColumns >= searchSettings.minColumns!) }
         if searchSettings.maxColumns != nil { query.filter(\.$boardColumns <= searchSettings.maxColumns!) }
         if searchSettings.minRows != nil, searchSettings.minRows! > 3 { query.filter(\.$boardRows >= searchSettings.minRows!) }
