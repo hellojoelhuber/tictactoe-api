@@ -25,8 +25,5 @@ final class PlayerFollowing: Model, Content {
     @Timestamp(key: v20220601.createdAt, on: .create)
     var createdAt: Date?
     
-    #warning("TODO: It might be interesting to plan for an audit table.")
-    // I would approach it by removing the unique constraint and instead find the most recent record where the player-following exists. If null, create. If not null, but most recent createdAt also has deletedAt != nil, then create a new record.
-    
     init() {}
 }

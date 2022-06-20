@@ -91,7 +91,7 @@ struct UsersController: RouteCollection {
                                      .count()
         
 //        return try await Player.find(player.id, on: req.db)!.convertToPublic()
-        return try await PlayerProfileDTO(player, gamesPlayed: gamesPlayed, gamesWon: gamesWon)
+        return try PlayerProfileDTO(player, gamesPlayed: gamesPlayed, gamesWon: gamesWon)
     }
     
     func getFollowedPlayersHandler(_ req: Request) async throws -> [PlayerDTO] {
@@ -134,27 +134,6 @@ struct UsersController: RouteCollection {
         return followed.convertToPublic()
     }
     
-    
-    
-    // MARK: - PUTS
-    #warning("TODO: Add PUT update profile options.")
-//    func updateHandler(_ req: Request) async throws -> PlayerDTO {
-//        let updateData = try req.content.decode(User.self)
-//        updateData.password = try Bcrypt.hash(user.password)
-//        return updateData.save(on: req.db).map { updateData.convertToPublic() }
-//        return User.find(req.parameters.get("userID"), on: req.db)
-//            .unwrap(or: Abort(.notFound))
-//            .flatMap { user in
-//                user.firstName = updateData.firstName
-//                user.lastName = updateData.lastName
-//                user.email = updateData.email
-//                return user.save(on: req.db).map {
-//                    user
-//                }
-//            }
-//    }
-    
-    #warning("TODO: Add Reset Password option.")
     
     // MARK: - DELETES
     func deleteHandler(_ request: Request) async throws -> HTTPStatus {

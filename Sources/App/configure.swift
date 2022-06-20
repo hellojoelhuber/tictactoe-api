@@ -58,8 +58,6 @@ public func configure(_ app: Application) throws {
     app.migrations.add(PlayerFollowing.AddCreatedAt())
     app.migrations.add(Player.AddPlayerIcon())
     
-    #warning("TODO: Refactor the migrations into a smaller set for the templatization of this project.")
-    
     switch app.environment {
     case .development, .testing:
         app.migrations.add(CreateAdminUser())

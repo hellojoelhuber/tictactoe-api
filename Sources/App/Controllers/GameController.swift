@@ -89,9 +89,6 @@ struct GameController: RouteCollection {
         }
 
         // This query filters by games which the player created.
-        // This only works for 2p games, since the player either created the game or the game has 0 seats remaining. More than 2p will require filter by players already sitting at game.
-        #warning("TODO: For >2p support, Filter by players sitting at the game.")
-
         let query = Game.query(on: req.db).filter(\.$isComplete == false)
                                           .filter(\.$createdBy.$id != player.id!)
                                           .filter(\.$openSeats > 0)
@@ -102,8 +99,7 @@ struct GameController: RouteCollection {
         if searchSettings.maxRows != nil { query.filter(\.$boardRows <= searchSettings.maxRows!) }
         #warning("TODO: Hide games where not Mutual Follows & locked to Mutuals Only.")
 //        if searchSettings.isMutualFollowsOnly
-        #warning("TODO: Add option to search for games created by players you follow.")
-//        if searchSettings.following
+//        if searchSettings.following // TODO: Add option to search for games created by players you follow.
 
         return try await query.with(\.$createdBy)
                               .with(\.$players)
@@ -260,17 +256,6 @@ struct GameController: RouteCollection {
         guard !game.isComplete else {
             throw Abort(.notFound)
         }
-        
-        // Attempt at async validation
-//        print(game.isComplete)
-//        let validator = GameValidator.init([
-//            KeyedContentValidator<Bool>.init("isComplete", "Game is already complete") { !game.isComplete },
-//        ])
-//        guard validator.validate(req) else {
-////            throw ValidationAbort(abort: <#T##<<error type>>#>, message: "Game is already complete.", details: <#T##[ValidationErrorDetail]#>)
-//            throw Abort(.notFound)
-//        }
-        
         
         // VALIDATION: Must be the current player's turn
         guard player.id! == game.$nextTurn.id else {

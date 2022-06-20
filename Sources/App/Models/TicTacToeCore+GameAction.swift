@@ -12,7 +12,7 @@ extension GameActionDTO: Content {}
 
 extension GameActionDTO {
     init(_ action: GameAction) throws {
-        try self.init(playerID: action.$player.id,
+        self.init(playerID: action.$player.id,
                       turnNumber: action.turnNumber,
                       action: action.action
         )

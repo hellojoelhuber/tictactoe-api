@@ -12,7 +12,7 @@ extension PlayerCreateDTO: Content {}
 
 extension PlayerCreateDTO {
     init(_ player: Player) throws {
-        try self.init(firstName: player.firstName,
+        self.init(firstName: player.firstName,
                       lastName: player.lastName,
                       username: player.username,
                       password: player.password,
