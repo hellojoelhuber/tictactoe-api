@@ -2,6 +2,10 @@ Packages
 .build
 xcuserdata
 *.xcodeproj
+*.xcuserstate project.xcworkspace/
+xcuserdata/
+*.xcuserdatad
+*/build/*
 DerivedData/
 .DS_Store
 db.sqlite
