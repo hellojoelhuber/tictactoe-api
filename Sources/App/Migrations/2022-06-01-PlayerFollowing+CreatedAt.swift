@@ -1,9 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Joel Huber on 5/30/22.
-//
 
 import Fluent
 

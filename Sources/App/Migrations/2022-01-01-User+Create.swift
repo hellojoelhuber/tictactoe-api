@@ -1,9 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Joel Huber on 1/01/22.
-//
 
 import Fluent
 import SQLKit

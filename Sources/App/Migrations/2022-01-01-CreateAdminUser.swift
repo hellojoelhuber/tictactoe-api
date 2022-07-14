@@ -1,9 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Joel Huber on 1/01/22.
-//
 
 import Fluent
 import Vapor
@@ -13,7 +7,7 @@ struct CreateAdminUser: AsyncMigration {
         let passwordHash: String
 //        do {
         passwordHash = try Bcrypt.hash("password")
-            // TASK: Turn password into a secret during deployment
+            // TODO: Turn password into a secret during deployment
 //        } catch {
 //            return database.eventLoop.future(error: error)
 //        }

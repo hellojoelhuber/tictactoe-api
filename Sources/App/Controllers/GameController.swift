@@ -101,6 +101,7 @@ struct GameController: RouteCollection {
         #warning("TODO: Hide games where not Mutual Follows & locked to Mutuals Only.")
 //        if searchSettings.isMutualFollowsOnly
 //        if searchSettings.following // TODO: Add option to search for games created by players you follow.
+                                      // Probably need to drop down to raw sql for this.
 
         return try await query.with(\.$createdBy)
                               .with(\.$players)
